@@ -35,8 +35,9 @@ export async function POST(req) {
 
     Output Format:
 {
-  "courseSummary": "string",
-  "chapters": [
+    "courseTitle": "string,
+    "courseSummary": "string",
+    "chapters": [
     {
       "chapterId": "string", 
       "name": "string",
