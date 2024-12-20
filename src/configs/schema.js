@@ -7,6 +7,7 @@ import {
   varchar,
   index,
   unique,
+  integer,
 } from 'drizzle-orm/pg-core';
 
 export const USER_TABLE = pgTable(
@@ -39,5 +40,19 @@ export const STUDY_MATERIAL_TABLE = pgTable(
     courseIdIndex: index().on(table.courseId),
     createdByIndex: index().on(table.createdBy),
     difficultyLevelIndex: index().on(table.difficultyLevel),
+  })
+);
+
+export const CHAPTER_NOTES_TABLE = pgTable(
+  'chapterNotes',
+  {
+    id: serial().primaryKey(),
+    courseId: varchar().notNull(),
+    chapterId: integer().notNull(),
+    notes: text(),
+  },
+  (table) => ({
+    courseIdIndex: index().on(table.courseId),
+    chapterIdIndex: index().on(table.chapterId), // For faster lookups
   })
 );

@@ -2,6 +2,7 @@ import { db } from '@/configs/db';
 import { courseOutlineAIModel } from '@/configs/gemini';
 import { STUDY_MATERIAL_TABLE } from '@/configs/schema';
 import { NextResponse } from 'next/server';
+import { inngest } from '../../../inngest/client';
 
 export async function POST(req) {
   try {
@@ -96,6 +97,16 @@ Guidelines:
       .returning({ resp: STUDY_MATERIAL_TABLE }); // Fetch the inserted row(s)
 
     console.log('Database insertion result:', dbResult);
+
+    // Trigger the Inngetst function to generate chapter notes
+
+    const result = await inngest.send({
+      name: 'notes.generate',
+      data: {
+        course: dbResult[0].resp,
+      },
+    });
+    console.log(result);
 
     // Return the saved course outline
     return NextResponse.json({ result: dbResult[0] }, { status: 201 });

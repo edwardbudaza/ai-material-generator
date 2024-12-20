@@ -5,7 +5,7 @@ import { RefreshCcw } from 'lucide-react';
 
 function CourseCardItem({ course }) {
   return (
-    <div className="border rounded-lg shadow-md p-5 bg-white dark:bg-gray-800 dark:border-gray-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
+    <div className="group border rounded-lg shadow-md p-5 bg-white dark:bg-gray-800 dark:border-gray-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
       <div className="flex justify-between items-center">
         <div className="flex items-center space-x-3">
           <Image src={'/study.svg'} alt="Course Icon" width={50} height={50} />
@@ -19,7 +19,7 @@ function CourseCardItem({ course }) {
         {course?.courseLayout?.courseTitle}
       </h2>
 
-      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 transition-colors duration-300 hover:text-gray-700 dark:hover:text-gray-300">
+      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 group-hover:line-clamp-3 transition-colors duration-300 hover:text-gray-700 dark:hover:text-gray-300">
         {course?.courseLayout?.courseSummary}
       </p>
 
@@ -27,10 +27,10 @@ function CourseCardItem({ course }) {
         <Progress value={0} />
       </div>
 
-      <div className="mt-4 flex justify-end">
+      <div className="mt-4 flex justify-end group">
         {course?.status === 'Generating' ? (
-          <h2 className="flex gap-2 text-sm p-1 px-2 rounded-full bg-gray-500 text-white dark:bg-gray-700 dark:text-gray-200">
-            <RefreshCcw className="size-5" />
+          <h2 className="flex gap-2 text-sm p-1 px-2 rounded-full bg-gray-500 text-white dark:bg-gray-700 dark:text-gray-200 group-hover:bg-gray-400 dark:group-hover:bg-gray-600 transition-colors duration-300">
+            <RefreshCcw className="size-5 group-hover:animate-spin" />
             Generating...
           </h2>
         ) : (
