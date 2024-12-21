@@ -9,6 +9,7 @@ import axios from 'axios';
 import { v4 as uuidv4 } from 'uuid';
 import { useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
 
 const initialFormData = {
   studyType: '',
@@ -69,21 +70,22 @@ function CreateCoursePage() {
     setLoading(true);
     try {
       const courseId = uuidv4();
-      console.log('Form Data Before Request', formData);
       const response = await axios.post('/api/generate-course-outline', {
         courseId,
-        courseType: formData.studyType, // Renamed to match backend
+        courseType: formData.studyType,
         topic: formData.topic,
-        difficultyLevel: formData.difficulty, // Renamed to match backend
+        difficultyLevel: formData.difficulty,
         createdBy: user?.primaryEmailAddress?.emailAddress,
       });
 
-      console.log('Generated Course Outline:', response.data);
+      toast.success('Course generation started successfully');
+      router.replace('/dashboard');
+      return response.data;
     } catch (error) {
+      toast.error('Failed to start course generation');
       console.error('Error generating course outline:', error);
     } finally {
       setLoading(false);
-      router.replace('/dashboard');
     }
   };
 

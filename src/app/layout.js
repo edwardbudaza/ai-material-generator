@@ -1,6 +1,7 @@
 import { ClerkProvider } from '@clerk/nextjs';
 import { Bebas_Neue } from 'next/font/google';
 
+import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import AuthProvider from '@/components/providers/auth-provider';
 import './globals.css';
@@ -27,7 +28,10 @@ export default function RootLayout({ children }) {
             enableSystem
             disableTransitionOnChange
           >
-            <AuthProvider>{children}</AuthProvider>
+            <AuthProvider>
+              {children}
+              <Toaster />
+            </AuthProvider>
           </ThemeProvider>
         </body>
       </html>
