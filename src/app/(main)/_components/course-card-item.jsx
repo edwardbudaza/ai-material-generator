@@ -1,7 +1,8 @@
-import Image from 'next/image';
-import { Progress } from '../../../components/ui/progress';
-import { Button } from '../../../components/ui/button';
+import { buttonVariants } from '@/components/ui/button';
 import { RefreshCcw } from 'lucide-react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Progress } from '../../../components/ui/progress';
 
 function CourseCardItem({ course }) {
   return (
@@ -34,7 +35,12 @@ function CourseCardItem({ course }) {
             Generating...
           </h2>
         ) : (
-          <Button>View</Button>
+          <Link
+            href={`/course/${course?.courseId}`}
+            className={buttonVariants({ variant: 'default' })}
+          >
+            View
+          </Link>
         )}
       </div>
     </div>

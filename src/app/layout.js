@@ -1,12 +1,12 @@
 import { ClerkProvider } from '@clerk/nextjs';
-import { Bebas_Neue } from 'next/font/google';
+import { Inter } from 'next/font/google';
 
 import { Toaster } from '@/components/ui/sonner';
 import { ThemeProvider } from '@/components/providers/theme-provider';
 import AuthProvider from '@/components/providers/auth-provider';
 import './globals.css';
 
-const font = Bebas_Neue({
+const font = Inter({
   subsets: ['latin'],
   weight: '400', // Specify the only available weight
   display: 'swap', // Optional for performance

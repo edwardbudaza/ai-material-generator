@@ -43,6 +43,7 @@ export async function POST(req) {
       "chapterId": "string", 
       "name": "string",
       "summary": "string",
+      "emoji": "emoji",
       "topics": ["string", "string"]
     }
   ]
@@ -53,6 +54,8 @@ Guidelines:
 - Use a JSON array for the "topics" field for better readability and querying.
 - Be concise and factual.
 - Strictly follow the provided JSON format.
+- NB: Include Emoji icon for each chapter
+
 
     `;
 
