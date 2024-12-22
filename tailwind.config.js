@@ -99,7 +99,56 @@ module.exports = {
         pulse: 'pulse 3s infinite',
         float: 'float 6s ease-in-out infinite',
       },
+      typography: {
+        DEFAULT: {
+          css: {
+            color: 'hsl(var(--foreground))',
+            a: {
+              color: 'hsl(var(--primary))',
+              '&:hover': {
+                color: 'hsl(var(--primary-foreground))',
+              },
+            },
+            pre: {
+              backgroundColor: 'hsl(var(--muted))', // Change background for code blocks in light mode
+              borderRadius: '8px',
+              padding: '1rem',
+              fontSize: '0.875rem',
+              overflowX: 'auto',
+              color: 'hsl(var(--foreground))', // Ensure text color is visible in light mode
+              code: {
+                background: 'transparent',
+                color: 'inherit',
+              },
+            },
+            code: {
+              fontSize: '1.1rem',
+              fontWeight: '600',
+              color: 'hsl(var(--primary))',
+            },
+            blockquote: {
+              borderLeft: '4px solid hsl(var(--primary))',
+              paddingLeft: '1rem',
+              fontStyle: 'italic',
+            },
+            'ul, ol': {
+              marginLeft: '1.25rem',
+            },
+          },
+        },
+        dark: {
+          css: {
+            pre: {
+              backgroundColor: 'hsl(var(--background))', // Keep dark background in dark mode
+              color: 'hsl(var(--foreground))', // Ensure text is visible in dark mode
+            },
+          },
+        },
+      },
     },
   },
-  plugins: [require('tailwindcss-animate')],
+  plugins: [
+    require('tailwindcss-animate'),
+    require('@tailwindcss/typography'), // Enable typography plugin for better content formatting
+  ],
 };

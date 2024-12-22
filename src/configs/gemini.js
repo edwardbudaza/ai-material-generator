@@ -23,6 +23,14 @@ const generationConfig = {
   responseMimeType: 'application/json',
 };
 
+const generationConfigContent = {
+  temperature: 1,
+  topP: 0.95,
+  topK: 40,
+  maxOutputTokens: 8192,
+  responseMimeType: 'text/html', // Changed to handle HTML content
+};
+
 export const courseOutlineAIModel = model.startChat({
   generationConfig,
   history: [
@@ -62,7 +70,7 @@ export const courseOutlineAIModel = model.startChat({
 });
 
 export const generateNotesAIModel = model.startChat({
-  generationConfig,
+  generationConfigContent,
   history: [
     {
       role: 'user',

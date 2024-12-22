@@ -14,7 +14,15 @@ function AuthProvider({ children }) {
 
     try {
       // Call your API to handle user creation or update
-      const response = await axios.post('/api/create-user', { user });
+      const userData = {
+        primaryEmailAddress: {
+          emailAddress: user.primaryEmailAddress,
+        },
+        fullName: user.fullName,
+      };
+
+      const response = await axios.post('/api/create-user', { user: userData });
+
       console.log('Response from create user:', response.data);
 
       // Mark user as checked to avoid redundant calls

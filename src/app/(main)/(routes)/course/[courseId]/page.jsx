@@ -3,7 +3,6 @@
 import axios from 'axios';
 import { useParams } from 'next/navigation';
 import { useEffect, useState } from 'react';
-import DashboardHeader from '../../../_components/dashboard-header';
 import CourseIntroCard from '../_components/course-into-card';
 import StudyMaterialSection from '../_components/study-material-section';
 import ChapterList from '../_components/chapter-list';
@@ -29,23 +28,19 @@ function CoursePage() {
   }, [courseId]);
 
   return (
-    <div className="bg-gray-50 dark:bg-gray-900 min-h-screen">
-      <DashboardHeader />
+    <div className="px-4 sm:px-8 lg:px-24 xl:px-36 mt-10">
+      {/* Course Intro */}
+      {loading ? (
+        <CourseIntroCard course={null} />
+      ) : (
+        <CourseIntroCard course={course} />
+      )}
 
-      <div className="mx-10 md:mx-36 lg:mx-60 mt-10">
-        {/* Course Intro */}
-        {loading ? (
-          <CourseIntroCard course={null} />
-        ) : (
-          <CourseIntroCard course={course} />
-        )}
+      {/* Study Material Section */}
+      <StudyMaterialSection courseId={courseId} />
 
-        {/* Study Material Section */}
-        <StudyMaterialSection />
-
-        {/* Chapter List Here */}
-        <ChapterList course={course} />
-      </div>
+      {/* Chapter List */}
+      <ChapterList course={course} />
     </div>
   );
 }
