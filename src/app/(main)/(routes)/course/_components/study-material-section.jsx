@@ -1,12 +1,11 @@
 import axios from 'axios';
+import { useEffect, useState } from 'react';
 import MaterialCardItem from './material-card-item';
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
 
-function StudyMaterialSection({ courseId }) {
-  const [studyTypeContent, setStudyTypeContent] = useState();
+function StudyMaterialSection({ courseId, course }) {
+  const [studyTypeContent, setStudyTypeContent] = useState(null);
 
-  const MaterialList = [
+  const materialList = [
     {
       name: 'Notes/Chapters',
       desc: 'Prepare with detailed notes and comprehensive chapters.',
@@ -38,17 +37,22 @@ function StudyMaterialSection({ courseId }) {
   ];
 
   useEffect(() => {
-    GetStudyMaterial();
+    fetchStudyMaterial();
   }, []);
 
-  const GetStudyMaterial = async () => {
-    const result = await axios.post('/api/study-type', {
-      courseId: courseId,
-      studyType: 'ALL',
-    });
+  const fetchStudyMaterial = async () => {
+    try {
+      const result = await axios.post('/api/study-type', {
+        courseId,
+        studyType: 'ALL',
+      });
 
-    console.log(result?.data);
-    setStudyTypeContent(result?.data);
+      // Update the state with the fetched data
+      setStudyTypeContent(result?.data || {});
+      console.log('This is the study type content: ', result);
+    } catch (error) {
+      console.error('Error fetching study material:', error);
+    }
   };
 
   return (
@@ -58,10 +62,14 @@ function StudyMaterialSection({ courseId }) {
       </h2>
 
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-        {MaterialList.map((item, index) => (
-          <Link href={`/course/${courseId}${item.path}`} key={index}>
-            <MaterialCardItem item={item} studyTypeContent={studyTypeContent} />
-          </Link>
+        {materialList.map((item) => (
+          <MaterialCardItem
+            key={item.type}
+            item={item}
+            studyTypeContent={studyTypeContent}
+            course={course}
+            refreshData={fetchStudyMaterial} // Pass refresh function
+          />
         ))}
       </div>
     </section>

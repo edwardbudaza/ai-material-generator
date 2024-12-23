@@ -4,9 +4,13 @@ import {
   USER_TABLE,
   CHAPTER_NOTES_TABLE,
   STUDY_MATERIAL_TABLE,
+  STUDY_TYPE_CONTENT_TABLE,
 } from '@/configs/schema';
 import { eq } from 'drizzle-orm';
-import { generateNotesAIModel } from '@/configs/gemini';
+import {
+  generateNotesAIModel,
+  GenerateStudyTypeContentAiModel,
+} from '@/configs/gemini';
 
 export const helloWorld = inngest.createFunction(
   { id: 'hello-world' },
@@ -72,46 +76,104 @@ export const CreateNewUser = inngest.createFunction(
 );
 
 export const GenerateNotes = inngest.createFunction(
-  {
-    id: 'generate-course-notes',
-  },
+  { id: 'generate-course-notes' },
   { event: 'notes.generate' },
   async ({ event, step }) => {
     const { course } = event.data;
 
-    // Generate Notes for Each Chapter with AI
-    const notesResult = await step.run('Generate Chapter Notes', async () => {
-      const Chapters = course?.courseLayout?.chapters;
-      let index = 0;
-      Chapters.forEach(async (chapter) => {
-        const PROMPT = `Generate exam material detailed content for each chapter, make sure to include all topic points in the contenet,
-        make sure to give content in HTML format only (Do not Add HTML, Head, Body, title tag). The chapters: ${JSON.stringify(chapter)}
-        `;
-        const result = await generateNotesAIModel.sendMessage(PROMPT);
-        const aiResp = result.response.text();
+    try {
+      // Step 1: Generate Notes for Each Chapter with AI
+      const notesResult = await step.run('Generate Chapter Notes', async () => {
+        try {
+          const chapters = course?.courseLayout?.chapters;
+          if (!chapters || !Array.isArray(chapters)) {
+            throw new Error('Invalid or missing chapters data.');
+          }
 
-        await db.insert(CHAPTER_NOTES_TABLE).values({
-          chapterId: index,
-          courseId: course?.courseId,
-          notes: aiResp,
-        });
-        index += 1;
+          let index = 0;
+          for (const chapter of chapters) {
+            const PROMPT = `Generate exam material detailed content for each chapter, make sure to include all topic points in the content.
+              Ensure the response is in HTML format only (Do not include HTML, Head, Body, or Title tags). The chapters: ${JSON.stringify(chapter)}`;
+
+            const aiResult = await generateNotesAIModel.sendMessage(PROMPT);
+            const aiResponse = await aiResult.response.text();
+
+            await db.insert(CHAPTER_NOTES_TABLE).values({
+              chapterId: index,
+              courseId: course?.courseId,
+              notes: aiResponse,
+            });
+            index += 1;
+          }
+
+          return 'Chapter notes generation completed successfully';
+        } catch (error) {
+          throw new Error(`Error generating chapter notes: ${error.message}`);
+        }
       });
-      return 'Completed';
-    });
 
-    // Update Status to 'Ready'
-    const updateCourseStatusResult = await step.run(
-      'Update Course Status to Ready',
-      async () => {
-        const result = await db
-          .update(STUDY_MATERIAL_TABLE)
-          .set({
-            status: 'Ready',
-          })
-          .where(eq(STUDY_MATERIAL_TABLE.courseId, course?.courseId));
-        return 'Success';
-      }
-    );
+      // Step 2: Update Course Status to 'Ready'
+      await step.run('Update Course Status to Ready', async () => {
+        try {
+          await db
+            .update(STUDY_MATERIAL_TABLE)
+            .set({ status: 'Ready' })
+            .where(eq(STUDY_MATERIAL_TABLE.courseId, course?.courseId));
+          return 'Course status updated to Ready';
+        } catch (error) {
+          throw new Error(`Error updating course status: ${error.message}`);
+        }
+      });
+    } catch (error) {
+      console.error(`Error in GenerateNotes: ${error.message}`);
+      throw error; // Propagate the error for further handling
+    }
+  }
+);
+
+//Used to generate Flashcards, Quiz and Q&A
+export const GenerateStudyTypeContent = inngest.createFunction(
+  { id: 'Generate Study Type Content' },
+  { event: 'studyType.content' },
+  async ({ event, step }) => {
+    const { studyType, prompt, courseId, recordId } = event.data;
+
+    try {
+      // Step 1: Generate Flashcard content using AI
+      const flashcardContent = await step.run(
+        'Generate Flashcard Content',
+        async () => {
+          try {
+            const response =
+              await GenerateStudyTypeContentAiModel.sendMessage(prompt);
+            const parsedContent = JSON.parse(await response.response.text());
+            if (!parsedContent)
+              throw new Error('AI response is empty or invalid');
+            return parsedContent;
+          } catch (error) {
+            throw new Error(`AI content generation failed: ${error.message}`);
+          }
+        }
+      );
+
+      // Step 2: Update the database record with generated content
+      await step.run('Update Database with Generated Content', async () => {
+        try {
+          const updateResult = await db
+            .update(STUDY_TYPE_CONTENT_TABLE)
+            .set({ content: flashcardContent, status: 'Ready' })
+            .where(eq(STUDY_TYPE_CONTENT_TABLE.id, recordId));
+
+          if (!updateResult)
+            throw new Error('Database update returned no result');
+          return 'Content successfully updated in the database';
+        } catch (error) {
+          throw new Error(`Database update failed: ${error.message}`);
+        }
+      });
+    } catch (error) {
+      console.error(`[GenerateStudyTypeContent] Error: ${error.message}`);
+      throw error; // Re-throw to allow upstream error handling
+    }
   }
 );

@@ -1,9 +1,47 @@
 import Image from 'next/image';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import axios from 'axios';
+import Link from 'next/link';
+import { useState } from 'react';
+import { RefreshCcw } from 'lucide-react';
 
-function MaterialCardItem({ item, studyTypeContent }) {
-  const isReady = studyTypeContent?.[item.type]?.length != null;
+function MaterialCardItem({ item, studyTypeContent, course, refreshData }) {
+  const [loading, setLoading] = useState(false);
+
+  // Check if the study type content for this item is ready
+  const isReady = Boolean(studyTypeContent?.[item.type]);
+
+  const generateContent = async () => {
+    if (!course?.courseLayout?.chapters?.length) {
+      console.error('Course layout or chapters are missing.');
+      return;
+    }
+
+    setLoading(true);
+
+    try {
+      const chapters = course.courseLayout.chapters
+        .map((chapter) => chapter.name)
+        .join(',');
+
+      // Trigger API to generate content
+      await axios.post('/api/study-type-content', {
+        courseId: course.courseId,
+        type: item.type,
+        chapters,
+      });
+
+      console.log(`Content generation triggered for ${item.type}`);
+
+      // Refresh the parent data after generation
+      await refreshData();
+    } catch (error) {
+      console.error('Error generating content:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <div
@@ -36,9 +74,26 @@ function MaterialCardItem({ item, studyTypeContent }) {
         {item.desc || 'No description available.'}
       </p>
 
-      <Button className="mt-3 w-full" variant="outline">
-        {isReady ? 'View' : 'Generate'}
-      </Button>
+      {isReady ? (
+        <Button asChild className="mt-3 w-full" variant="outline">
+          <Link href={`/course/${course?.courseId}${item.path}`}>View</Link>
+        </Button>
+      ) : (
+        <Button
+          className="mt-3 w-full"
+          variant="outline"
+          onClick={generateContent}
+          disabled={loading}
+        >
+          {loading ? (
+            <>
+              <RefreshCcw className="animate-spin" /> Generating...
+            </>
+          ) : (
+            'Generate'
+          )}
+        </Button>
+      )}
     </div>
   );
 }

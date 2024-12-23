@@ -56,3 +56,18 @@ export const CHAPTER_NOTES_TABLE = pgTable(
     chapterIdIndex: index().on(table.chapterId), // For faster lookups
   })
 );
+
+export const STUDY_TYPE_CONTENT_TABLE = pgTable(
+  'studyTypeContent',
+  {
+    id: serial().primaryKey(),
+    courseId: varchar().notNull(),
+    content: json(),
+    type: varchar().notNull(),
+    status: varchar().default('Generating'),
+  },
+  (table) => ({
+    courseIdIndex: index().on(table.courseId), // Index for faster lookups by courseId
+    typeIndex: index().on(table.type), // Index for faster lookups by type
+  })
+);
