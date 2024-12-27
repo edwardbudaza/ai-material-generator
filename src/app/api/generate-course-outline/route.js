@@ -40,7 +40,7 @@ export async function POST(req) {
     "courseSummary": "string",
     "chapters": [
     {
-      "chapterId": "string", 
+      "chapterId": "integer", 
       "name": "string",
       "summary": "string",
       "emoji": "emoji",

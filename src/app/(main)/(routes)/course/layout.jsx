@@ -1,12 +1,20 @@
+'use client';
+
 import DashboardHeader from '../../_components/dashboard-header';
 
 function CourseLayout({ children }) {
   return (
-    <div className="min-h-screen flex flex-col bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100">
-      <DashboardHeader />
-      <main className="flex-1 px-4 sm:px-8 md:px-16 lg:px-24 py-6">
-        {children}
-      </main>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900">
+      {/* Main Content */}
+      <div className="flex flex-col min-h-screen">
+        <header className="sticky top-0 z-30 bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800">
+          <div className="flex items-center px-4 h-16">
+            <DashboardHeader />
+          </div>
+        </header>
+
+        <main className="flex-1 p-4 md:p-8 lg:p-10">{children}</main>
+      </div>
     </div>
   );
 }

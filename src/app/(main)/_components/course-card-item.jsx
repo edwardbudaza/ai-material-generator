@@ -1,49 +1,76 @@
 import { buttonVariants } from '@/components/ui/button';
-import { RefreshCcw } from 'lucide-react';
+import { Card, CardContent, CardFooter } from '@/components/ui/card';
+import { RefreshCcw, Calendar, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { Progress } from '../../../components/ui/progress';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '../../../lib/utils';
 
 function CourseCardItem({ course }) {
+  const formattedDate = new Date('2024-12-20').toLocaleDateString('en-US', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  });
+
   return (
-    <div className="group border rounded-lg shadow-md p-5 bg-white dark:bg-gray-800 dark:border-gray-700 transition-all duration-300 transform hover:scale-105 hover:shadow-xl hover:bg-gray-100 dark:hover:bg-gray-700 cursor-pointer">
-      <div className="flex justify-between items-center">
-        <div className="flex items-center space-x-3">
-          <Image src={'/study.svg'} alt="Course Icon" width={50} height={50} />
-          <span className="text-xs bg-gray-200 dark:bg-gray-600 p-1 px-2 rounded-full text-gray-800 dark:text-white">
-            20 Dec 2024
-          </span>
+    <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg hover:ring-1 hover:ring-purple-500/20">
+      <CardContent className="p-5">
+        <div className="flex justify-between items-start">
+          <div className="relative w-12 h-12 mb-3">
+            <Image
+              src="/study.svg"
+              alt="Course Icon"
+              fill
+              className="object-contain transition-transform duration-300 group-hover:scale-110"
+            />
+          </div>
+          <div className="flex items-center space-x-1 text-xs font-medium text-gray-500 dark:text-gray-400">
+            <Calendar className="w-3 h-3" />
+            <span>{formattedDate}</span>
+          </div>
         </div>
-      </div>
 
-      <h2 className="mt-3 font-medium text-xl text-gray-900 dark:text-white truncate transition-colors duration-300 hover:text-primary">
-        {course?.courseLayout?.courseTitle}
-      </h2>
+        <h2 className="font-semibold text-xl text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 truncate mb-2">
+          {course?.courseLayout?.courseTitle}
+        </h2>
 
-      <p className="text-sm text-gray-500 dark:text-gray-400 mt-2 line-clamp-2 group-hover:line-clamp-3 transition-colors duration-300 hover:text-gray-700 dark:hover:text-gray-300">
-        {course?.courseLayout?.courseSummary}
-      </p>
+        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 group-hover:line-clamp-3 transition-all duration-300 mb-4">
+          {course?.courseLayout?.courseSummary}
+        </p>
 
-      <div className="mt-3">
-        <Progress value={0} />
-      </div>
+        <div className="space-y-2">
+          <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400">
+            <span>Progress</span>
+            <span>0%</span>
+          </div>
+          <Progress value={0} className="h-1.5 bg-gray-100 dark:bg-gray-700" />
+        </div>
+      </CardContent>
 
-      <div className="mt-4 flex justify-end group">
+      <CardFooter className="px-5 pb-5 pt-0">
         {course?.status === 'Generating' ? (
-          <h2 className="flex gap-2 text-sm p-1 px-2 rounded-full bg-gray-500 text-white dark:bg-gray-700 dark:text-gray-200 group-hover:bg-gray-400 dark:group-hover:bg-gray-600 transition-colors duration-300">
-            <RefreshCcw className="size-5 group-hover:animate-spin" />
-            Generating...
-          </h2>
+          <div className="w-full flex justify-end">
+            <div className="inline-flex items-center space-x-2 px-4 py-2 rounded-md bg-purple-100 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400">
+              <RefreshCcw className="w-4 h-4 animate-spin" />
+              <span className="text-sm font-medium">Generating...</span>
+            </div>
+          </div>
         ) : (
           <Link
             href={`/course/${course?.courseId}`}
-            className={buttonVariants({ variant: 'default' })}
+            className={cn(
+              buttonVariants({ variant: 'outline' }),
+              'w-full bg-white dark:bg-gray-800 border-purple-500/20 hover:border-purple-500 text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-300',
+              'group/button flex items-center justify-center space-x-2'
+            )}
           >
-            View
+            <span>View Course</span>
+            <ChevronRight className="w-4 h-4 transition-transform duration-300 group-hover/button:translate-x-1" />
           </Link>
         )}
-      </div>
-    </div>
+      </CardFooter>
+    </Card>
   );
 }
 

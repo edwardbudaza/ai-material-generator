@@ -1,20 +1,21 @@
-import Image from 'next/image';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import axios from 'axios';
-import Link from 'next/link';
+// MaterialCardItem.jsx
 import { useState } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { cn } from '@/lib/utils';
 import { RefreshCcw } from 'lucide-react';
+import { toast } from 'sonner';
+import axios from 'axios';
 
 function MaterialCardItem({ item, studyTypeContent, course, refreshData }) {
   const [loading, setLoading] = useState(false);
-
-  // Check if the study type content for this item is ready
   const isReady = Boolean(studyTypeContent?.[item.type]);
 
   const generateContent = async () => {
     if (!course?.courseLayout?.chapters?.length) {
-      console.error('Course layout or chapters are missing.');
+      toast.error('Course layout or chapters are missing.');
       return;
     }
 
@@ -25,76 +26,84 @@ function MaterialCardItem({ item, studyTypeContent, course, refreshData }) {
         .map((chapter) => chapter.name)
         .join(',');
 
-      // Trigger API to generate content
       await axios.post('/api/study-type-content', {
         courseId: course.courseId,
         type: item.type,
         chapters,
       });
 
-      console.log(`Content generation triggered for ${item.type}`);
-
-      // Refresh the parent data after generation
+      toast.success(`Content generation triggered for ${item.type}.`);
       await refreshData();
     } catch (error) {
       console.error('Error generating content:', error);
+      toast.error('Failed to generate content. Please try again later.');
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div
+    <Card
       className={cn(
-        'border shadow-md rounded-lg p-5 flex flex-col items-center bg-white dark:bg-gray-800 dark:border-gray-700 transition-transform transform hover:scale-105',
-        !isReady && 'grayscale opacity-75'
+        'transition-all duration-300 hover:shadow-lg hover:scale-[1.02]',
+        !isReady && 'opacity-75'
       )}
     >
-      <span
-        className={cn(
-          'p-1 px-2 rounded-full text-[10px] font-medium mb-2',
-          isReady ? 'bg-green-500 text-white' : 'bg-gray-500 text-white'
-        )}
-      >
-        {isReady ? 'Ready' : 'Generate'}
-      </span>
-
-      <Image
-        src={item.icon}
-        alt={item.name}
-        width={50}
-        height={50}
-        className="rounded-lg"
-      />
-
-      <h3 className="font-medium mt-3 text-gray-900 dark:text-white text-center">
-        {item.name}
-      </h3>
-      <p className="text-gray-500 dark:text-gray-400 text-sm text-center mt-2">
-        {item.desc || 'No description available.'}
-      </p>
-
-      {isReady ? (
-        <Button asChild className="mt-3 w-full" variant="outline">
-          <Link href={`/course/${course?.courseId}${item.path}`}>View</Link>
-        </Button>
-      ) : (
-        <Button
-          className="mt-3 w-full"
-          variant="outline"
-          onClick={generateContent}
-          disabled={loading}
-        >
-          {loading ? (
-            <>
-              <RefreshCcw className="animate-spin" /> Generating...
-            </>
-          ) : (
-            'Generate'
+      <CardContent className="p-6 flex flex-col items-center">
+        <span
+          className={cn(
+            'px-3 py-1 rounded-full text-xs font-medium mb-4',
+            isReady
+              ? 'bg-gradient-to-r from-violet-500 to-purple-500 text-white'
+              : 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-300'
           )}
-        </Button>
-      )}
-    </div>
+        >
+          {isReady ? 'Ready' : 'Generate'}
+        </span>
+
+        <div className="p-3 bg-gradient-to-br from-violet-500/10 via-purple-500/10 to-fuchsia-500/10 rounded-lg">
+          <Image
+            src={item.icon}
+            alt={item.name}
+            width={50}
+            height={50}
+            className="rounded-lg"
+          />
+        </div>
+
+        <h3 className="font-medium mt-4 text-gray-900 dark:text-white text-center">
+          {item.name}
+        </h3>
+        <p className="text-gray-500 dark:text-gray-400 text-sm text-center mt-2">
+          {item.desc || 'No description available.'}
+        </p>
+
+        {isReady ? (
+          <Button
+            asChild
+            className="mt-4 w-full bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white hover:opacity-90"
+          >
+            <Link href={`/course/${course?.courseId}${item.path}`}>View</Link>
+          </Button>
+        ) : (
+          <Button
+            className="mt-4 w-full"
+            variant="outline"
+            onClick={generateContent}
+            disabled={loading}
+          >
+            {loading ? (
+              <div className="flex items-center gap-2">
+                <RefreshCcw className="w-4 h-4 animate-spin" />
+                <span>Generating...</span>
+              </div>
+            ) : (
+              'Generate'
+            )}
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 

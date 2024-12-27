@@ -31,6 +31,15 @@ export async function POST(req) {
       case 'notes':
         return await handleNotes(courseId);
 
+      case 'flashcard':
+        return await handleFlashcards(courseId);
+
+      case 'quiz':
+        return await handleQuiz(courseId);
+
+      case 'qa':
+        return await handleQA(courseId);
+
       default:
         return NextResponse.json(
           { error: `Invalid studyType: ${studyType}` },
@@ -93,5 +102,71 @@ async function handleNotes(courseId) {
   } catch (error) {
     console.error('Error in handleNotes:', error);
     throw new Error('Failed to fetch notes');
+  }
+}
+
+/**
+ * Fetches flashcards for the given course ID.
+ * @param {string} courseId - The course identifier.
+ * @returns {NextResponse} JSON response with the flashcard data.
+ */
+async function handleFlashcards(courseId) {
+  try {
+    const flashcards = await db
+      .select()
+      .from(STUDY_TYPE_CONTENT_TABLE)
+      .where(
+        eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseId),
+        eq(STUDY_TYPE_CONTENT_TABLE.type, 'flashcard')
+      );
+
+    return NextResponse.json(flashcards);
+  } catch (error) {
+    console.error('Error in handleFlashcards:', error);
+    throw new Error('Failed to fetch flashcards');
+  }
+}
+
+/**
+ * Fetches quizzes for the given course ID.
+ * @param {string} courseId - The course identifier.
+ * @returns {NextResponse} JSON response with the quiz data.
+ */
+async function handleQuiz(courseId) {
+  try {
+    const quizzes = await db
+      .select()
+      .from(STUDY_TYPE_CONTENT_TABLE)
+      .where(
+        eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseId),
+        eq(STUDY_TYPE_CONTENT_TABLE.type, 'quiz')
+      );
+
+    return NextResponse.json(quizzes);
+  } catch (error) {
+    console.error('Error in handleQuiz:', error);
+    throw new Error('Failed to fetch quizzes');
+  }
+}
+
+/**
+ * Fetches Q&A for the given course ID.
+ * @param {string} courseId - The course identifier.
+ * @returns {NextResponse} JSON response with the Q&A data.
+ */
+async function handleQA(courseId) {
+  try {
+    const qa = await db
+      .select()
+      .from(STUDY_TYPE_CONTENT_TABLE)
+      .where(
+        eq(STUDY_TYPE_CONTENT_TABLE.courseId, courseId),
+        eq(STUDY_TYPE_CONTENT_TABLE.type, 'qa')
+      );
+
+    return NextResponse.json(qa);
+  } catch (error) {
+    console.error('Error in handleQA:', error);
+    throw new Error('Failed to fetch Q&A');
   }
 }

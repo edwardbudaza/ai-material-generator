@@ -2,12 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import Image from 'next/image';
-import { LayoutDashboard, Shield, UserCircle } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Shield,
+  UserCircle,
+  Plus,
+  Sparkles,
+} from 'lucide-react';
 import { usePathname } from 'next/navigation';
-
 import { cn } from '../../../lib/utils';
 import { Button } from '../../../components/ui/button';
 import { Progress } from '../../../components/ui/progress';
+import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
 
 function Sidebar() {
@@ -16,11 +22,9 @@ function Sidebar() {
   const path = usePathname();
 
   useEffect(() => {
-    // Simulating an API call
     const fetchData = async () => {
       setIsLoading(true);
       try {
-        // Simulate API delay
         const fakeCredits = await new Promise((resolve) =>
           setTimeout(() => resolve(5), 2000)
         );
@@ -53,31 +57,34 @@ function Sidebar() {
   ];
 
   return (
-    <div className="h-screen w-64 bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 shadow-md flex flex-col justify-between">
+    <div className="h-screen w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
       {/* Logo Section */}
-      <div className="flex gap-3 items-center justify-center mt-6">
-        <Image
-          src="/logo.svg"
-          height="40"
-          width="40"
-          alt="Logo"
-          className="dark:hidden"
-        />
-        <Image
-          src="/logo-dark.svg"
-          height="40"
-          width="40"
-          alt="Logo"
-          className="hidden dark:block"
-        />
-        <h2 className="font-bold text-2xl">Learn Mate</h2>
+      <div className="flex items-center justify-center gap-3 p-6 border-b border-gray-200 dark:border-gray-800">
+        <div className="relative w-10 h-10">
+          <Image
+            src="/logo.svg"
+            fill
+            alt="Logo"
+            className="object-contain dark:hidden transition-opacity"
+          />
+          <Image
+            src="/logo-dark.svg"
+            fill
+            alt="Logo"
+            className="object-contain hidden dark:block transition-opacity"
+          />
+        </div>
+        <h2 className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500">
+          Learn Mate
+        </h2>
       </div>
 
       {/* Menu Section */}
-      <div className="mt-10 flex-1 px-4">
+      <div className="flex-1 px-4 py-6">
         <Link href="/create-course">
-          <Button className="w-full py-2 bg-primary hover:bg-primary-dark text-white">
-            + Create New
+          <Button className="w-full bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white hover:opacity-90 transition-all duration-300 group">
+            <Plus className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:rotate-90" />
+            Create New
           </Button>
         </Link>
 
@@ -87,13 +94,18 @@ function Sidebar() {
               key={index}
               href={menu.path}
               className={cn(
-                'flex gap-4 items-center p-3 rounded-lg transition-colors',
+                'flex items-center gap-3 p-3 rounded-lg transition-all duration-300',
                 path === menu.path
-                  ? 'bg-primary text-white'
-                  : 'hover:bg-gray-200 dark:hover:bg-gray-800'
+                  ? 'bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white shadow-md shadow-purple-500/20'
+                  : 'hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400'
               )}
             >
-              <menu.icon className="h-5 w-5" />
+              <menu.icon
+                className={cn(
+                  'w-5 h-5 transition-transform duration-300',
+                  path === menu.path ? 'rotate-0' : 'group-hover:rotate-3'
+                )}
+              />
               <span className="font-medium">{menu.name}</span>
             </Link>
           ))}
@@ -101,36 +113,45 @@ function Sidebar() {
       </div>
 
       {/* Credits Section */}
-      <div className="p-4 bg-gray-100 dark:bg-gray-800 rounded-lg mx-4 mb-6">
-        <h2 className="text-lg font-medium mb-2">Available Credits:</h2>
+      <div className="p-4">
+        <Card className="bg-gray-50 dark:bg-gray-800/50 border-purple-500/20">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="font-semibold text-gray-800 dark:text-gray-200">
+                Credits
+              </h3>
+              <Sparkles className="w-4 h-4 text-purple-500" />
+            </div>
 
-        {isLoading ? (
-          <div className="animate-pulse">
-            <div className="h-6 bg-gray-300 dark:bg-gray-600 rounded w-20 mb-2"></div>
-            <Progress value={0} className="mb-2" />
-            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-36"></div>
-          </div>
-        ) : (
-          <>
-            <h2 className="text-lg font-medium mb-2">
-              {credits || 0} Credits Remaining
-            </h2>
-            <Progress
-              value={credits ? (credits - 1) * 20 : 0}
-              className="mb-2"
-            />
-            <p className="text-sm text-gray-600 dark:text-gray-400">
-              1 out of {credits} Credits used
-            </p>
-          </>
-        )}
-
-        <Link
-          href={'/dashboard/upgrade'}
-          className="block text-primary hover:underline text-sm mt-3"
-        >
-          Upgrade to create more
-        </Link>
+            {isLoading ? (
+              <div className="space-y-4">
+                <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                <Progress value={0} className="h-1.5" />
+                <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
+              </div>
+            ) : (
+              <div className="space-y-3">
+                <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500">
+                  {credits || 0} Credits
+                </p>
+                <Progress
+                  value={credits ? (credits - 1) * 20 : 0}
+                  className="h-1.5 bg-gray-200 dark:bg-gray-700"
+                />
+                <p className="text-sm text-gray-600 dark:text-gray-400">
+                  1 out of {credits} Credits used
+                </p>
+                <Link
+                  href="/dashboard/upgrade"
+                  className="inline-flex items-center text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                >
+                  <Shield className="w-4 h-4 mr-1" />
+                  Upgrade to get more credits
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );

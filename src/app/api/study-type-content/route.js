@@ -15,12 +15,31 @@ export async function POST(req) {
     }
 
     // Construct the AI prompt
-    const prompt = `
+    const prompt =
+      type === 'flashcard'
+        ? `
       Generate up to 15 concise flashcards on the topic: '${chapters}'. 
       Provide the output in JSON format, where each flashcard contains:
       - 'front': A question or term
       - 'back': An answer or explanation
-    `.trim();
+    `.trim()
+        : `Generate a quiz on the topic: ${chapters}. 
+      Each question should include:
+      - A clear and concise question.
+      - 4 multiple-choice options labeled A, B, C, and D.
+      - The correct answer clearly specified.
+      - Format the output as a JSON array of objects with the following structure:
+      {
+      "quizTitle":"string",
+      "questions": [
+        {
+          "question": "string",
+          "options": ["string", "string", "string", "string"],
+          "correctAnswer": "string"
+        }
+        ]
+      }
+      Limit the quiz to a maximum of 15 questions.`.trim();
 
     // Insert record into the database and set status to 'Generating...'
     const [newRecord] = await db

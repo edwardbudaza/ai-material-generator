@@ -10,6 +10,7 @@ import { eq } from 'drizzle-orm';
 import {
   generateNotesAIModel,
   GenerateStudyTypeContentAiModel,
+  GenerateQuizAIModel,
 } from '@/configs/gemini';
 
 export const helloWorld = inngest.createFunction(
@@ -25,9 +26,11 @@ export const CreateNewUser = inngest.createFunction(
   { id: 'create-user' }, // Unique identifier for the function
   { event: 'user.create' }, // Triggered on the "user.create" event
   async ({ event, step }) => {
-    const { user } = event.data; // Extract user data from the event
+    const { emailAddress, fullName } = event.data?.user || {}; // Extract relevant fields
 
-    if (!user?.primaryEmailAddress?.emailAddress) {
+    // Validate the user data
+    if (!emailAddress) {
+      console.error('User email is missing in the payload.');
       return {
         status: 'Error',
         message: 'User email is missing. Cannot create user.',
@@ -40,7 +43,7 @@ export const CreateNewUser = inngest.createFunction(
         const existingUser = await db
           .select()
           .from(USER_TABLE)
-          .where(eq(USER_TABLE.email, user.primaryEmailAddress.emailAddress));
+          .where(eq(USER_TABLE.email, emailAddress));
 
         if (existingUser.length > 0) {
           console.log('User already exists:', existingUser);
@@ -51,8 +54,8 @@ export const CreateNewUser = inngest.createFunction(
         const newUser = await db
           .insert(USER_TABLE)
           .values({
-            name: user.fullName,
-            email: user.primaryEmailAddress.emailAddress,
+            name: fullName || 'Unnamed User', // Handle missing full name
+            email: emailAddress,
           })
           .returning({ id: USER_TABLE.id });
 
@@ -69,10 +72,6 @@ export const CreateNewUser = inngest.createFunction(
       result,
     };
   }
-
-  // TODO: Add additional steps for notifications, such as:
-  // 1. Send Welcome Email Notification
-  // 2. Send a Follow-Up Email After 3 Days
 );
 
 export const GenerateNotes = inngest.createFunction(
@@ -99,7 +98,7 @@ export const GenerateNotes = inngest.createFunction(
             const aiResponse = await aiResult.response.text();
 
             await db.insert(CHAPTER_NOTES_TABLE).values({
-              chapterId: index,
+              chapterId: chapter?.chapterId,
               courseId: course?.courseId,
               notes: aiResponse,
             });
@@ -140,12 +139,14 @@ export const GenerateStudyTypeContent = inngest.createFunction(
 
     try {
       // Step 1: Generate Flashcard content using AI
-      const flashcardContent = await step.run(
+      const AIResult = await step.run(
         'Generate Flashcard Content',
         async () => {
           try {
             const response =
-              await GenerateStudyTypeContentAiModel.sendMessage(prompt);
+              studyType === 'flashcard'
+                ? await GenerateStudyTypeContentAiModel.sendMessage(prompt)
+                : await GenerateQuizAIModel.sendMessage(prompt);
             const parsedContent = JSON.parse(await response.response.text());
             if (!parsedContent)
               throw new Error('AI response is empty or invalid');
@@ -161,7 +162,7 @@ export const GenerateStudyTypeContent = inngest.createFunction(
         try {
           const updateResult = await db
             .update(STUDY_TYPE_CONTENT_TABLE)
-            .set({ content: flashcardContent, status: 'Ready' })
+            .set({ content: AIResult, status: 'Ready' })
             .where(eq(STUDY_TYPE_CONTENT_TABLE.id, recordId));
 
           if (!updateResult)

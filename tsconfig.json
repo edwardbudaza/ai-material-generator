@@ -24,7 +24,8 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx",
-    "src/app/(main)/(routes)/course/[courseId]/page.jsx"
+    "src/app/(main)/(routes)/course/[courseId]/page.jsx",
+    "src/app/(main)/(routes)/course/[courseId]/flashcards/page.jsx"
   ],
   "exclude": ["node_modules"]
 }
