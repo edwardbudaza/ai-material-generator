@@ -5,14 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '../../../lib/utils';
+import { format } from 'date-fns';
 
 function CourseCardItem({ course }) {
-  const formattedDate = new Date('2024-12-20').toLocaleDateString('en-US', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  });
-
   return (
     <Card className="group overflow-hidden transition-all duration-300 hover:shadow-lg hover:ring-1 hover:ring-purple-500/20">
       <CardContent className="p-5">
@@ -27,7 +22,11 @@ function CourseCardItem({ course }) {
           </div>
           <div className="flex items-center space-x-1 text-xs font-medium text-gray-500 dark:text-gray-400">
             <Calendar className="w-3 h-3" />
-            <span>{formattedDate}</span>
+            <span>
+              {course?.createdAt
+                ? format(new Date(course.createdAt), 'd MMM yyyy')
+                : 'N/A'}
+            </span>
           </div>
         </div>
 

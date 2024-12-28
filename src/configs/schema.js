@@ -8,6 +8,7 @@ import {
   index,
   unique,
   integer,
+  timestamp, // Import the timestamp type
 } from 'drizzle-orm/pg-core';
 
 export const USER_TABLE = pgTable(
@@ -35,6 +36,7 @@ export const STUDY_MATERIAL_TABLE = pgTable(
     courseLayout: json(),
     createdBy: text().notNull(),
     status: varchar().default('Generating'),
+    createdAt: timestamp().defaultNow(), // Add the createdAt field
   },
   (table) => ({
     courseIdIndex: index().on(table.courseId),
@@ -65,6 +67,7 @@ export const STUDY_TYPE_CONTENT_TABLE = pgTable(
     content: json(),
     type: varchar().notNull(),
     status: varchar().default('Generating'),
+    createdAt: timestamp().defaultNow(), // Add the createdAt field
   },
   (table) => ({
     courseIdIndex: index().on(table.courseId), // Index for faster lookups by courseId

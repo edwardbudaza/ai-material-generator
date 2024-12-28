@@ -1,4 +1,4 @@
-// app/(dashboard)/courses/[courseId]/_services/quiz-service.js
+// app/(main)/courses/[courseId]/_services/quiz-service.js
 import axios from 'axios';
 
 export const quizService = {

@@ -5,7 +5,7 @@ import {
   HarmBlockThreshold,
 } from '@google/generative-ai';
 
-// Load .env.local file
+// Load .env file
 config({ path: '.env' });
 
 const apiKey = process.env.GEMINI_API_KEY;

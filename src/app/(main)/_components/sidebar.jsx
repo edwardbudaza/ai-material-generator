@@ -143,7 +143,7 @@ function Sidebar() {
                 </p>
                 <Link
                   href="/dashboard/upgrade"
-                  className="inline-flex items-center text-sm text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                  className="inline-flex items-center text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
                 >
                   <Shield className="w-4 h-4 mr-1" />
                   Upgrade to get more credits
