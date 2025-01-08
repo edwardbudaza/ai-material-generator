@@ -1,8 +1,7 @@
-import { useEffect, useState } from 'react';
-import Image from 'next/image';
-import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
-import { motion } from 'framer-motion';
+import { cn } from '@/lib/utils';
+import Image from 'next/image';
+import { useEffect, useState } from 'react';
 
 function SelectOption({ selectedStudyType, preSelected }) {
   const [selectedOption, setSelectedOption] = useState(preSelected || '');
