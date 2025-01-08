@@ -1,93 +1,65 @@
 import { db } from '@/configs/db';
 import { STUDY_MATERIAL_TABLE } from '@/configs/schema';
-import { desc, eq } from 'drizzle-orm';
+import { asc, desc, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
-export async function POST(req) {
+export async function GET(request) {
   try {
-    const { createdBy } = await req.json();
+    const { searchParams } = new URL(request.url);
+    const email = searchParams.get('email');
+    const courseId = searchParams.get('courseId');
 
-    if (!createdBy) {
+    // If courseId is provided, fetch specific course
+    if (courseId) {
+      console.log(`Fetching course with ID: ${courseId}`);
+
+      const course = await db
+        .select()
+        .from(STUDY_MATERIAL_TABLE)
+        .where(eq(STUDY_MATERIAL_TABLE.courseId, courseId))
+        .limit(1);
+
+      if (!course.length) {
+        return NextResponse.json(
+          { message: 'Course not found' },
+          { status: 404 }
+        );
+      }
+
+      return NextResponse.json({
+        result: course[0],
+        message: 'Course fetched successfully',
+      });
+    }
+
+    // If no courseId, validate email for listing all courses
+    if (!email) {
       return NextResponse.json(
-        { error: 'createdBy is required' },
+        { message: 'Email parameter is required for listing courses.' },
         { status: 400 }
       );
     }
 
-    const result = await db
-      .select()
-      .from(STUDY_MATERIAL_TABLE)
-      .where(eq(STUDY_MATERIAL_TABLE.createdBy, createdBy))
-      .orderBy(desc(STUDY_MATERIAL_TABLE.id));
+    console.log(`Fetching all courses for user: ${email}`);
 
-    return NextResponse.json({ result });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
-}
-
-// export async function GET(req) {
-//   const reqUrl = req.url;
-//   const { searchParams } = new URL(reqUrl);
-//   const courseId = searchParams?.get('courseId');
-
-//   const course = await db
-//     .select()
-//     .from(STUDY_MATERIAL_TABLE)
-//     .where(eq(STUDY_MATERIAL_TABLE?.courseId, courseId));
-
-//   return NextResponse.json({ reult: course[0] });
-// }
-
-export async function GET(req) {
-  try {
-    // Input validation
-    const courseId = new URL(req.url).searchParams.get('courseId');
-
-    if (!courseId) {
-      return NextResponse.json(
-        {
-          error: 'Course ID is required',
-        },
-        { status: 400 }
-      );
-    }
-
-    // Database query with proper error handling
+    // Query the database for all user's courses
     const courses = await db
       .select()
       .from(STUDY_MATERIAL_TABLE)
-      .where(eq(STUDY_MATERIAL_TABLE?.courseId, courseId))
-      .limit(1);
+      .where(eq(STUDY_MATERIAL_TABLE.createdBy, email))
+      .orderBy(desc(STUDY_MATERIAL_TABLE.createdAt));
 
-    // Handle case when no course is found
-    if (!courses.length) {
-      return NextResponse.json(
-        {
-          error: 'Course not found',
-        },
-        {
-          status: 404,
-        }
-      );
-    }
+    console.log(`Found ${courses.length} courses for user`);
 
     return NextResponse.json({
-      success: true,
-      result: courses[0],
+      result: courses,
+      message: 'Courses fetched successfully',
     });
   } catch (error) {
-    console.error('Error fetching course', error);
-
+    console.error('Error in GET /api/courses:', error);
     return NextResponse.json(
-      {
-        error: 'Internal server error',
-        message:
-          process.env.NODE_ENV === 'development' ? eroor.message : undefined,
-      },
-      {
-        status: 500,
-      }
+      { message: 'Internal Server Error', details: error.message },
+      { status: 500 }
     );
   }
 }

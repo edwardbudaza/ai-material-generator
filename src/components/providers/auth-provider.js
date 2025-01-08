@@ -1,3 +1,4 @@
+// components/AuthProvider.js
 'use client';
 
 import { useRef, useEffect, useCallback } from 'react';
@@ -8,12 +9,10 @@ function AuthProvider({ children }) {
   const { user } = useUser();
   const userChecked = useRef(false);
 
-  // Function to check and insert new user
   const checkAndInsertUser = useCallback(async () => {
     if (!user || userChecked.current) return;
 
     try {
-      // Call your API to handle user creation or update
       const userData = {
         primaryEmailAddress: {
           emailAddress: user.primaryEmailAddress,
@@ -21,14 +20,10 @@ function AuthProvider({ children }) {
         fullName: user.fullName,
       };
 
-      const response = await axios.post('/api/create-user', { user: userData });
-
-      console.log('Response from create user:', response.data);
-
-      // Mark user as checked to avoid redundant calls
+      await axios.post('/api/create-user', { user: userData });
       userChecked.current = true;
     } catch (error) {
-      console.error('Error in user check:', error);
+      console.error('Error checking user:', error);
     }
   }, [user]);
 
@@ -36,7 +31,7 @@ function AuthProvider({ children }) {
     checkAndInsertUser();
   }, [checkAndInsertUser]);
 
-  return <div>{children}</div>;
+  return children;
 }
 
 export default AuthProvider;

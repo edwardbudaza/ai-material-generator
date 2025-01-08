@@ -1,7 +1,7 @@
 'use client';
 
-import { useState } from 'react';
-import { Menu, X } from 'lucide-react';
+import { useState, useContext, useEffect } from 'react';
+import { Menu, Shield } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   Sheet,
@@ -11,41 +11,25 @@ import {
   SheetTrigger,
 } from '@/components/ui/sheet';
 import Image from 'next/image';
-import { usePathname } from 'next/navigation';
-import { cn } from '@/lib/utils';
 import Link from 'next/link';
-import { Progress } from '@/components/ui/progress';
+import { Plus, Sparkles } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import {
-  LayoutDashboard,
-  Shield,
-  UserCircle,
-  Plus,
-  Sparkles,
-} from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { MenuList } from './menu-list';
+import { useCredits } from '@/hooks/use-credits';
+import { CourseCountContext } from '@/context/course-count-context';
+import { usePathname } from 'next/navigation';
 
 function MobileNav() {
   const [isOpen, setIsOpen] = useState(false);
-  const path = usePathname();
-  const [credits, setCredits] = useState(5); // Simplified for demo
+  const { credits, isLoading } = useCredits();
+  const { totalCourse } = useContext(CourseCountContext);
+  const pathname = usePathname();
 
-  const MenuList = [
-    {
-      name: 'Dashboard',
-      icon: LayoutDashboard,
-      path: '/dashboard',
-    },
-    {
-      name: 'Upgrade',
-      icon: Shield,
-      path: '/dashboard/upgrade',
-    },
-    {
-      name: 'Profile',
-      icon: UserCircle,
-      path: '/dashboard/profile',
-    },
-  ];
+  // Close sheet when pathname changes
+  useEffect(() => {
+    setIsOpen(false);
+  }, [pathname]);
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -65,13 +49,13 @@ function MobileNav() {
                   src="/logo.svg"
                   fill
                   alt="Logo"
-                  className="object-contain dark:hidden"
+                  className="object-contain dark:hidden transition-opacity"
                 />
                 <Image
                   src="/logo-dark.svg"
                   fill
                   alt="Logo"
-                  className="object-contain hidden dark:block"
+                  className="object-contain hidden dark:block transition-opacity"
                 />
               </div>
               <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500">
@@ -82,31 +66,16 @@ function MobileNav() {
 
           {/* Menu Content */}
           <div className="flex-1 px-4 py-6">
-            <Link href="/create-course" onClick={() => setIsOpen(false)}>
-              <Button className="w-full bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white hover:opacity-90 transition-all duration-300">
-                <Plus className="w-4 h-4 mr-2" />
+            <Link href="/create-course">
+              <Button className="w-full bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white hover:opacity-90 transition-all duration-300 group">
+                <Plus className="w-4 h-4 mr-2 transition-transform duration-300 group-hover:rotate-90" />
                 Create New
               </Button>
             </Link>
 
-            <nav className="mt-6 space-y-2">
-              {MenuList.map((menu) => (
-                <Link
-                  key={menu.name}
-                  href={menu.path}
-                  onClick={() => setIsOpen(false)}
-                  className={cn(
-                    'flex items-center gap-3 p-3 rounded-lg transition-all duration-300',
-                    path === menu.path
-                      ? 'bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white'
-                      : 'hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-600 dark:text-gray-400'
-                  )}
-                >
-                  <menu.icon className="w-5 h-5" />
-                  <span className="font-medium">{menu.name}</span>
-                </Link>
-              ))}
-            </nav>
+            <div className="mt-6">
+              <MenuList credits={credits} onClick={() => setIsOpen(false)} />
+            </div>
           </div>
 
           {/* Credits Section */}
@@ -119,18 +88,34 @@ function MobileNav() {
                   </h3>
                   <Sparkles className="w-4 h-4 text-purple-500" />
                 </div>
-                <div className="space-y-3">
-                  <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500">
-                    {credits} Credits
-                  </p>
-                  <Progress
-                    value={(credits - 1) * 20}
-                    className="h-1.5 bg-gray-200 dark:bg-gray-700"
-                  />
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    1 out of {credits} Credits used
-                  </p>
-                </div>
+
+                {isLoading ? (
+                  <div className="space-y-4">
+                    <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
+                    <Progress value={0} className="h-1.5" />
+                    <div className="h-4 bg-gray-200 dark:bg-gray-700 rounded animate-pulse w-3/4" />
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500">
+                      {credits - totalCourse || 0} Credits
+                    </p>
+                    <Progress
+                      value={credits ? (credits / totalCourse) * 100 : 0}
+                      className="h-1.5 bg-gray-200 dark:bg-gray-700"
+                    />
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      {totalCourse} out of {credits} Credits used
+                    </p>
+                    <Link
+                      href="/dashboard/credits"
+                      className="inline-flex items-center text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
+                    >
+                      <Shield className="w-4 h-4 mr-1" />
+                      Buy more credits
+                    </Link>
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>

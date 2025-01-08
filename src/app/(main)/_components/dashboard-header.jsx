@@ -1,12 +1,12 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { UserButton } from '@clerk/nextjs';
+import { ClerkLoaded, ClerkLoading, UserButton } from '@clerk/nextjs';
 import { ModeToggle } from '@/components/global/mode-toggle';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Home, ChevronRight } from 'lucide-react';
+import { Home, ChevronRight, Loader } from 'lucide-react';
 
 const DashboardHeader = () => {
   const [isLoading, setIsLoading] = useState(true);
@@ -63,15 +63,19 @@ const DashboardHeader = () => {
 
       {/* Right side - User controls */}
       <div className="flex items-center gap-4">
+        <ClerkLoading>
+          <Loader className="h-8 w-8 animate-spin" />
+        </ClerkLoading>
+        <ClerkLoaded>
+          <UserButton
+            appearance={{
+              elements: {
+                avatarBox: 'h-8 w-8',
+              },
+            }}
+          />
+        </ClerkLoaded>
         <ModeToggle />
-        <UserButton
-          afterSignOutUrl="/"
-          appearance={{
-            elements: {
-              avatarBox: 'h-8 w-8',
-            },
-          }}
-        />
       </div>
     </div>
   );

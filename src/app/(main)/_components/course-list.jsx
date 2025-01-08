@@ -2,12 +2,13 @@
 
 import { useUser } from '@clerk/nextjs';
 import axios from 'axios';
-import { useEffect, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import CourseCardItem from './course-card-item';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { RefreshCcw, BookOpen } from 'lucide-react';
 import { cn } from '@/lib/utils';
+import { CourseCountContext } from '@/context/course-count-context';
 
 function CourseList() {
   const { user } = useUser();
@@ -15,6 +16,7 @@ function CourseList() {
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const { totalCourse, setTotalCourse } = useContext(CourseCountContext);
 
   useEffect(() => {
     if (user) {
@@ -26,10 +28,10 @@ function CourseList() {
     try {
       if (!refreshing) setLoading(true);
       setError(null);
-      const result = await axios.post('/api/courses', {
-        createdBy: user?.primaryEmailAddress?.emailAddress,
-      });
+      const email = user?.primaryEmailAddress?.emailAddress;
+      const result = await axios.get(`/api/courses?email=${email}`);
       setCourseList(result.data.result);
+      setTotalCourse(result.data.result?.length);
     } catch (error) {
       console.error('Error fetching courses:', error);
       setError('Failed to load courses. Please try again.');

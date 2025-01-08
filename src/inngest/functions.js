@@ -22,58 +22,53 @@ export const helloWorld = inngest.createFunction(
   }
 );
 
-export const CreateNewUser = inngest.createFunction(
-  { id: 'create-user' }, // Unique identifier for the function
-  { event: 'user.create' }, // Triggered on the "user.create" event
+export const createNewUser = inngest.createFunction(
+  { id: 'create-user' },
+  { event: 'user.create' },
   async ({ event, step }) => {
-    const { emailAddress, fullName } = event.data?.user || {}; // Extract relevant fields
+    const { user } = event.data;
+    const email = user.email?.emailAddress;
+    const fullName = user.fullName;
 
-    // Validate the user data
-    if (!emailAddress) {
-      console.error('User email is missing in the payload.');
-      return {
-        status: 'Error',
-        message: 'User email is missing. Cannot create user.',
-      };
+    if (!email || !fullName) {
+      throw new Error('Invalid user payload: Missing email or fullName');
     }
 
-    const result = await step.run('Check and Create User', async () => {
-      try {
-        // Check if the user already exists in the database
-        const existingUser = await db
-          .select()
-          .from(USER_TABLE)
-          .where(eq(USER_TABLE.email, emailAddress));
+    console.log('Processed Payload:', { email, fullName });
 
-        if (existingUser.length > 0) {
-          console.log('User already exists:', existingUser);
-          return { status: 'UserExists', data: existingUser };
+    try {
+      const existingUser = await step.run(
+        'Check for Existing User',
+        async () => {
+          const users = await db
+            .select()
+            .from(USER_TABLE)
+            .where(eq(USER_TABLE.email, email));
+          return users[0];
         }
+      );
 
-        // Insert new user into the database
-        const newUser = await db
-          .insert(USER_TABLE)
-          .values({
-            name: fullName || 'Unnamed User', // Handle missing full name
-            email: emailAddress,
-          })
-          .returning({ id: USER_TABLE.id });
-
-        console.log('New user created:', newUser);
-        return { status: 'NewUserCreated', data: newUser };
-      } catch (error) {
-        console.error('Error while checking or creating user:', error);
-        throw new Error('Database operation failed.');
+      if (!existingUser) {
+        const newUser = await step.run('Create User', async () => {
+          const inserted = await db
+            .insert(USER_TABLE)
+            .values({
+              name: fullName,
+              email,
+            })
+            .returning();
+          return inserted[0];
+        });
+        return { success: true, userId: newUser.id };
       }
-    });
 
-    return {
-      status: 'Success',
-      result,
-    };
+      return { success: true, userId: existingUser.id };
+    } catch (error) {
+      console.error('Database operation failed:', error);
+      throw new Error('Failed to process user creation');
+    }
   }
 );
-
 export const GenerateNotes = inngest.createFunction(
   { id: 'generate-course-notes' },
   { event: 'notes.generate' },

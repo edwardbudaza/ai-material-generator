@@ -1,41 +1,39 @@
+// api/create-user/route.js
 import { inngest } from '@/inngest/client';
 import { NextResponse } from 'next/server';
 
 export async function POST(req) {
   try {
-    // Parse the request body
     const { user } = await req.json();
 
-    // Input Validation: Ensure 'user' object has required properties
-    if (!user || !user.primaryEmailAddress?.emailAddress || !user.fullName) {
+    // Simplified validation for required fields
+    const email = user?.primaryEmailAddress?.emailAddress;
+    const fullName = user?.fullName;
+
+    if (!email || !fullName) {
       return NextResponse.json(
         { error: 'Missing required user fields: email and fullName' },
-        { status: 400 } // Bad Request
+        { status: 400 }
       );
     }
 
-    // Call the Inngest API to create the user
+    // Send event to Inngest
     const result = await inngest.send({
-      name: 'user.create', // Ensure this matches the function name in the Inngest backend
-      data: { user },
+      name: 'user.create',
+      data: {
+        user: {
+          email,
+          fullName,
+        },
+      },
     });
 
-    // If Inngest response is successful
-    if (result.success) {
-      return NextResponse.json({ result }, { status: 200 }); // OK
-    } else {
-      // Handle failure response from Inngest
-      return NextResponse.json(
-        { error: 'Failed to create user', details: result.details },
-        { status: 500 } // Internal Server Error
-      );
-    }
+    return NextResponse.json({ success: true, data: result }, { status: 200 });
   } catch (error) {
-    // Catch unexpected errors and log them
     console.error('Error in user creation:', error);
     return NextResponse.json(
-      { error: 'An unexpected error occurred during user creation' },
-      { status: 500 } // Internal Server Error
+      { error: 'An unexpected error occurred' },
+      { status: 500 }
     );
   }
 }

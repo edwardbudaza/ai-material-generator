@@ -70,27 +70,55 @@ function CreateCoursePage() {
     setLoading(true);
     try {
       const courseId = uuidv4();
+      const email = user?.primaryEmailAddress?.emailAddress;
+
+      if (!email) {
+        throw new Error('User email not found');
+      }
+
+      // First check if user has enough credits
+      const creditsResponse = await axios.get(
+        `/api/user-credits?email=${email}`
+      );
+      const credits = creditsResponse.data.credits;
+
+      if (credits < 1) {
+        toast.error(
+          'Insufficient credits. Please purchase more credits to continue.'
+        );
+        router.push('/pricing');
+        return;
+      }
+
+      // Start course generation
       const response = await axios.post('/api/generate-course-outline', {
         courseId,
         courseType: formData.studyType,
         topic: formData.topic,
         difficultyLevel: formData.difficulty,
-        createdBy: user?.primaryEmailAddress?.emailAddress,
+        createdBy: email,
       });
+
+      // Deduct credit only if course generation started successfully
+      await axios.post('/api/deduct-credit', { email });
 
       toast.success('Course generation started successfully');
       router.replace('/dashboard');
-      return response.data;
     } catch (error) {
-      toast.error('Failed to start course generation');
-      console.error('Error generating course outline:', error);
+      console.error('Error:', error);
+      toast.error(
+        error.response?.data?.message || 'Failed to start course generation'
+      );
     } finally {
       setLoading(false);
     }
   };
 
+  // Rest of the component remains the same
   return (
     <div className="flex flex-col items-center p-5 md:px-24 lg:px-36 mt-16">
+      {/* Existing JSX */}
+
       <h2 className="font-bold text-3xl lg:text-4xl text-indigo-600 dark:text-indigo-400 text-center">
         Build Your Personalized Study Material
       </h2>

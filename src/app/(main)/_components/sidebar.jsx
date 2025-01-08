@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useState, useContext, useEffect } from 'react';
 import Image from 'next/image';
 import {
   LayoutDashboard,
@@ -9,52 +9,29 @@ import {
   Plus,
   Sparkles,
 } from 'lucide-react';
-import { usePathname } from 'next/navigation';
-import { cn } from '../../../lib/utils';
 import { Button } from '../../../components/ui/button';
 import { Progress } from '../../../components/ui/progress';
 import { Card, CardContent } from '@/components/ui/card';
 import Link from 'next/link';
+import { cn } from '../../../lib/utils';
+import { MenuList } from './menu-list'; // Import the MenuList component
+import { useCredits } from '@/hooks/use-credits'; // Import the useCredits hook
+import { CourseCountContext } from '@/context/course-count-context';
 
 function Sidebar() {
-  const [isLoading, setIsLoading] = useState(true);
-  const [credits, setCredits] = useState(null);
-  const path = usePathname();
+  const { credits, isLoading } = useCredits(); // Fetch credits from the hook
+  const { totalCourse } = useContext(CourseCountContext);
+  const [menuItems, setMenuItems] = useState([
+    { name: 'Dashboard', icon: LayoutDashboard, path: '/dashboard' },
+    { name: 'Credits', icon: Shield, path: '/dashboard/credits' },
+    { name: 'Profile', icon: UserCircle, path: '/dashboard/profile' },
+  ]);
+
+  const [isCreditsLoading, setIsCreditsLoading] = useState(isLoading);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setIsLoading(true);
-      try {
-        const fakeCredits = await new Promise((resolve) =>
-          setTimeout(() => resolve(5), 2000)
-        );
-        setCredits(fakeCredits);
-      } catch (error) {
-        console.error('Failed to load data:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-    fetchData();
-  }, []);
-
-  const MenuList = [
-    {
-      name: 'Dashboard',
-      icon: LayoutDashboard,
-      path: '/dashboard',
-    },
-    {
-      name: 'Upgrade',
-      icon: Shield,
-      path: '/dashboard/upgrade',
-    },
-    {
-      name: 'Profile',
-      icon: UserCircle,
-      path: '/dashboard/profile',
-    },
-  ];
+    setIsCreditsLoading(isLoading); // Set loading state for credits
+  }, [isLoading]);
 
   return (
     <div className="h-screen w-64 bg-white dark:bg-gray-900 border-r border-gray-200 dark:border-gray-800 flex flex-col">
@@ -88,28 +65,7 @@ function Sidebar() {
           </Button>
         </Link>
 
-        <nav className="mt-6 space-y-2">
-          {MenuList.map((menu, index) => (
-            <Link
-              key={index}
-              href={menu.path}
-              className={cn(
-                'flex items-center gap-3 p-3 rounded-lg transition-all duration-300',
-                path === menu.path
-                  ? 'bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500 text-white shadow-md shadow-purple-500/20'
-                  : 'hover:bg-purple-50 dark:hover:bg-purple-900/20 text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400'
-              )}
-            >
-              <menu.icon
-                className={cn(
-                  'w-5 h-5 transition-transform duration-300',
-                  path === menu.path ? 'rotate-0' : 'group-hover:rotate-3'
-                )}
-              />
-              <span className="font-medium">{menu.name}</span>
-            </Link>
-          ))}
-        </nav>
+        <MenuList credits={credits} />
       </div>
 
       {/* Credits Section */}
@@ -123,7 +79,7 @@ function Sidebar() {
               <Sparkles className="w-4 h-4 text-purple-500" />
             </div>
 
-            {isLoading ? (
+            {isCreditsLoading ? (
               <div className="space-y-4">
                 <div className="h-6 bg-gray-200 dark:bg-gray-700 rounded animate-pulse" />
                 <Progress value={0} className="h-1.5" />
@@ -132,21 +88,21 @@ function Sidebar() {
             ) : (
               <div className="space-y-3">
                 <p className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-violet-500 via-purple-500 to-fuchsia-500">
-                  {credits || 0} Credits
+                  {credits - totalCourse || 0} Credits
                 </p>
                 <Progress
-                  value={credits ? (credits - 1) * 20 : 0}
+                  value={credits ? (credits / totalCourse) * 100 : 0}
                   className="h-1.5 bg-gray-200 dark:bg-gray-700"
                 />
                 <p className="text-sm text-gray-600 dark:text-gray-400">
-                  1 out of {credits} Credits used
+                  {totalCourse} out of {credits} Credits used
                 </p>
                 <Link
-                  href="/dashboard/upgrade"
+                  href="/dashboard/credits"
                   className="inline-flex items-center text-xs text-purple-600 dark:text-purple-400 hover:text-purple-700 dark:hover:text-purple-300 transition-colors"
                 >
                   <Shield className="w-4 h-4 mr-1" />
-                  Upgrade to get more credits
+                  Buy more credits
                 </Link>
               </div>
             )}

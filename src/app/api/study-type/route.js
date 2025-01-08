@@ -3,7 +3,7 @@ import {
   CHAPTER_NOTES_TABLE,
   STUDY_TYPE_CONTENT_TABLE,
 } from '@/configs/schema';
-import { eq } from 'drizzle-orm';
+import { asc, eq } from 'drizzle-orm';
 import { NextResponse } from 'next/server';
 
 /**
@@ -96,7 +96,8 @@ async function handleNotes(courseId) {
     const notes = await db
       .select()
       .from(CHAPTER_NOTES_TABLE)
-      .where(eq(CHAPTER_NOTES_TABLE.courseId, courseId));
+      .where(eq(CHAPTER_NOTES_TABLE.courseId, courseId))
+      .orderBy(asc(CHAPTER_NOTES_TABLE.chapterId));
 
     return NextResponse.json(notes);
   } catch (error) {

@@ -3,6 +3,7 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
+import { RotateCw } from 'lucide-react';
 
 export function ErrorState({ message, onRetry }) {
   return (
