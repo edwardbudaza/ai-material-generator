@@ -26,7 +26,9 @@
     "**/*.tsx",
     "src/app/(main)/(routes)/course/[courseId]/page.jsx",
     "src/app/(main)/(routes)/course/[courseId]/flashcards/page.jsx",
-    "src/app/(main)/(routes)/course/[courseId]/notes/page.jsx"
+    "src/app/(main)/(routes)/course/[courseId]/notes/page.jsx",
+    "src/app/(main)/(routes)/course/[courseId]/quiz/page.jsx",
+    "src/app/(main)/_components/select-option.jsx"
   ],
   "exclude": ["node_modules"]
 }
