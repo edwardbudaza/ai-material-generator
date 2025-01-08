@@ -25,7 +25,8 @@
     "**/*.ts",
     "**/*.tsx",
     "src/app/(main)/(routes)/course/[courseId]/page.jsx",
-    "src/app/(main)/(routes)/course/[courseId]/flashcards/page.jsx"
+    "src/app/(main)/(routes)/course/[courseId]/flashcards/page.jsx",
+    "src/app/(main)/(routes)/course/[courseId]/notes/page.jsx"
   ],
   "exclude": ["node_modules"]
 }
