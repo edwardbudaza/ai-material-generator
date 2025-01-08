@@ -54,9 +54,32 @@ Learn Mate is built on a robust tech stack that ensures a seamless user experien
 3.  **Set up environment variables**: Create a `.env` file in the root directory and add the following environment variables, replacing the placeholders with your actual values:
 
     ```
-    DATABASE_URL=your_database_url
-    GEMINI_API_KEY=your_gemini_api_key
-    PAYSTACK_SECRET_KEY=your_paystack_secret_key
+    # -------------------------------
+    # Database Configuration
+    # -------------------------------
+    DATABASE_URL=
+    # -------------------------------
+    # Clerk Configuration
+    # -------------------------------
+    NEXT_PUBLIC_CLERK_PUBLISHABLE_KEY=
+    CLERK_SECRET_KEY=
+    NEXT_PUBLIC_CLERK_SIGN_IN_URL=/sign-in
+    NEXT_PUBLIC_CLERK_SIGN_UP_URL=/sign-up
+    NEXT_PUBLIC_CLERK_SIGN_IN_FALLBACK_REDIRECT_URL=/dashboard
+    NEXT_PUBLIC_CLERK_SIGN_UP_FORCE_REDIRECT_URL=/create-course
+
+    # -------------------------------
+    # Gemini Configuration
+    # -------------------------------
+    GEMINI_API_KEY=
+
+    # -------------------------------
+    # Paystack Configuration
+    # -------------------------------
+
+    PAYSTACK_SECRET_KEY=
+    PAYSTACK_PUBLIC_KEY=
+    NEXT_PUBLIC_APP_URL=http://localhost:3000 OR Deployed APP URL
     ```
 
 4.  **Run the development server**:
